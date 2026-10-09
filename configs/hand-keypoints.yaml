@@ -1,0 +1,39 @@
+# Based on Ultralytics hand-keypoints.yaml:
+# https://github.com/ultralytics/ultralytics/blob/main/ultralytics/cfg/datasets/hand-keypoints.yaml
+# Dataset paths are resolved relative to the Ultralytics datasets directory.
+path: hand-keypoints
+train: images/train
+val: images/val
+
+kpt_shape: [21, 3]
+# Mirroring a hand preserves each joint's anatomical identity.
+flip_idx: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+
+names:
+  0: hand
+
+kpt_names:
+  0:
+    - wrist
+    - thumb_cmc
+    - thumb_mcp
+    - thumb_ip
+    - thumb_tip
+    - index_mcp
+    - index_pip
+    - index_dip
+    - index_tip
+    - middle_mcp
+    - middle_pip
+    - middle_dip
+    - middle_tip
+    - ring_mcp
+    - ring_pip
+    - ring_dip
+    - ring_tip
+    - pinky_mcp
+    - pinky_pip
+    - pinky_dip
+    - pinky_tip
+
+download: https://github.com/ultralytics/assets/releases/download/v0.0.0/hand-keypoints.zip
