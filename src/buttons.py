@@ -115,12 +115,17 @@ class ButtonsManager:
         ymax = max(y1, y2)
         return xmin <= x <= xmax and ymin <= y <= ymax
 
-    def process_function(self, x, y):
+    def process_function(self, points):
         for button in self.buttons:
-            if self._is_into_rectangle(button.pt1, button.pt2, x, y):
+            is_inside = any(
+                self._is_into_rectangle(button.pt1, button.pt2, x, y)
+                for x, y in points
+            )
+            if is_inside:
                 if not button.is_clicked:
                     button.function()
                     button.is_clicked = True
-            else:
-                button.end_function()
+            elif button.is_clicked:
+                if button.end_function is not None:
+                    button.end_function()
                 button.is_clicked = False

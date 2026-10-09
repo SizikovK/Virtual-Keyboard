@@ -1,8 +1,16 @@
 import cv2
-from numba.scripts.generate_lower_listing import description
 from ultralytics import YOLO
 import argparse
-from vkeyboard import VirtualKeyboard
+import logging
+from ultralytics.utils import LOGGER
+
+from buttons import ButtonsManager
+from vkeyboard import VirtualKeyboardController
+
+
+class StreamWaitFilter(logging.Filter):
+    def filter(self, record):
+        return "Waiting for stream " not in record.getMessage()
 
 
 def mirror_frames(predictor):
@@ -14,6 +22,7 @@ def mirror_frames(predictor):
     )
 
 def main():
+    LOGGER.addFilter(StreamWaitFilter())
     parser = argparse.ArgumentParser(description="Виртуальная клавиатура")
     parser.add_argument('--weights', type=str, help="Файл с весами модели")
     args = parser.parse_args()
@@ -28,11 +37,15 @@ def main():
 
     model = YOLO(weights)
 
-    vkeyboard = VirtualKeyboard()
+    button_manager = ButtonsManager()
+    vkeyboard = VirtualKeyboardController(button_manager)
+
     vkeyboard.add_key("a")
     vkeyboard.add_key("w")
     vkeyboard.add_key("d")
     vkeyboard.add_key("s")
+    vkeyboard.add_key("space")
+    vkeyboard.add_key("shift")
 
     model.add_callback("on_predict_batch_start", mirror_frames)
 
@@ -47,17 +60,19 @@ def main():
     try:
         for result in results:
             annotated_frame = result.plot()
-            vkeyboard.render_buttons(annotated_frame)
-
+            points = []
             if result.keypoints is not None:
                 for hand in result.keypoints.xy:
-                    vkeyboard.render_keypoints(annotated_frame, hand, [13,])
+                    points.extend(vkeyboard.render_keypoints(annotated_frame, hand, [4, 8, 12, 16, 20]))
+            vkeyboard.buttons_manager.process_function(points)
+            vkeyboard.render_buttons(annotated_frame)
 
             cv2.imshow("Hand tracking", annotated_frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
     finally:
+        vkeyboard.buttons_manager.process_function([])
         results.close()
         cv2.destroyAllWindows()
 
