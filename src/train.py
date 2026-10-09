@@ -1,29 +1,32 @@
 from ultralytics import YOLO
 import argparse
 
-parser = argparse.ArgumentParser(description="Скрипт для обучения модели")
-model = YOLO("yolo26n-pose.pt")
 
-parser.add_argument('--epochs', type=int, help='Количество эпох обучения', default=10)
-parser.add_argument('--batch', type=int, help='Число тренировочных объектов обрабатываемых одновременно', default=8)
+def main():
+    parser = argparse.ArgumentParser(description="Скрипт для обучения модели")
 
-args = parser.parse_args()
-epochs = args.epochs
-batch = args.batch
+    parser.add_argument('--epochs', type=int, help='Количество эпох обучения', default=150)
+    parser.add_argument('--batch', type=int, help='Количество изображений в пакете', default=8)
+    parser.add_argument('--device', type=str, help='0 - CUDA, cpu - CPU', default="cpu")
 
-if epochs is not None or batch is not None:
+    args = parser.parse_args()
+    model = YOLO("yolo26n-pose.pt")
+
     model.train(
         data="configs/hand-keypoints.yaml",
-        device="cpu",
+        device=args.device,
         epochs=args.epochs,
-        imgsz=416,
+        imgsz=640,
         batch=args.batch,
-        fraction=0.1,
-        patience=5,
+        fraction=1.0,
+        patience=30,
         save_period=-1,
         amp=True,
         workers=2,
+        cos_lr=True,
         project="hand-tracking",
     )
-else:
-    print("Проверьте корректность всех аргументов")
+
+
+if __name__ == "__main__":
+    main()
